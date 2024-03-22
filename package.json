@@ -1,0 +1,22 @@
+{
+  "name": "serverless",
+  "version": "1.0.0",
+  "description": "Code for serverless functions gcp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KaranThakkarNEU/serverless.git"
+  },
+  "author": "Karan_Thakkar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KaranThakkarNEU/serverless/issues"
+  },
+  "homepage": "https://github.com/KaranThakkarNEU/serverless#readme",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0"
+  }
+}
