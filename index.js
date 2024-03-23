@@ -6,7 +6,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 // be executed when the Pub/Sub trigger topic receives a message.
 functions.cloudEvent("verify_email", async (cloudEvent) => {
   // The Pub/Sub message is passed as the CloudEvent's data payload.
-  const email = cloudEvent.data.message.username;
+  const email = cloudEvent.username;
 
   const msg = {
     to: email,
