@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/KaranThakkarNEU/serverless#readme",
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.3.0"
+    "@google-cloud/functions-framework": "^3.3.0",
+    "@sendgrid/mail": "^8.1.1"
   }
 }
