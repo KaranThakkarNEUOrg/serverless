@@ -1,6 +1,11 @@
 const functions = require("@google-cloud/functions-framework");
-const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const formData = require("form-data");
+const Mailgun = require("mailgun.js");
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({
+  username: "karan009",
+  key: process.env.MAILGUN_API_KEY,
+});
 
 // Register a CloudEvent callback with the Functions Framework that will
 // be executed when the Pub/Sub trigger topic receives a message.
@@ -8,18 +13,32 @@ functions.cloudEvent("verify_email", async (cloudEvent) => {
   console.log(cloudEvent);
   // The Pub/Sub message is passed as the CloudEvent's data payload.
   const email = cloudEvent.username;
+  const verificationLink =
+    cloudEvent.verificationLink ||
+    "https://www.youtube.com/watch?v=O1RpPG7Kb1s&list=RDMMow77NqggH-0&index=3";
+  const firstName = cloudEvent.first_name;
 
-  const msg = {
-    to: email,
-    from: "thakkar.kara@northeastern.edu",
-    subject: "Email Verification CSYE6225",
-    text: "Please verify your email using the link below",
-    html: "<strong>and easy to do anywhere, even with Node.js</strong>",
-  };
-  try {
-    await sgMail.send(msg);
-    console.log(`Email sent to ${name}`);
-  } catch (error) {
-    console.error(error);
-  }
+  mg.messages
+    .create("karanthakkar.me", {
+      from: "noreply@karanthakkar.me",
+      to: [email],
+      subject: "Please verify your email address",
+      text: `Dear ${firstName},
+
+      Thank you for registering at our website. Please click on the following link to verify your email address: 
+      
+      If you did not request this, please ignore this email.
+      
+      Best Regards,
+      Karan Thakkar`,
+      html: `<p>Dear ${firstName},</p>
+
+      <p>Thank you for registering at our website. Please click on the following link to verify your email address: <a href="${verificationLink}">${verificationLink}</a></p>
+      
+      <p>If you did not request this, please ignore this email.</p>
+      
+      <p>Best Regards,<br>Karan Thakkar</p>`,
+    })
+    .then((msg) => console.log(msg)) // logs response data
+    .catch((err) => console.log(err));
 });
