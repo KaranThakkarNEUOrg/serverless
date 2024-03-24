@@ -10,13 +10,15 @@ const mg = mailgun.client({
 // Register a CloudEvent callback with the Functions Framework that will
 // be executed when the Pub/Sub trigger topic receives a message.
 functions.cloudEvent("verify_email", async (cloudEvent) => {
-  console.log(cloudEvent);
   // The Pub/Sub message is passed as the CloudEvent's data payload.
-  const email = cloudEvent.username;
+  // The Pub/Sub message is passed as the CloudEvent's data payload.
+  const userDetails = Buffer.from(cloudEvent.data.message.data, "base64");
+
+  const email = userDetails["username"];
   const verificationLink =
-    cloudEvent.verificationLink ||
+    userDetails["verificationLink"] ||
     "https://www.youtube.com/watch?v=O1RpPG7Kb1s&list=RDMMow77NqggH-0&index=3";
-  const firstName = cloudEvent.first_name;
+  const firstName = userDetails["first_name"];
 
   mg.messages
     .create("karanthakkar.me", {
