@@ -12,7 +12,9 @@ const mg = mailgun.client({
 functions.cloudEvent("verify_email", async (cloudEvent) => {
   // The Pub/Sub message is passed as the CloudEvent's data payload.
   // The Pub/Sub message is passed as the CloudEvent's data payload.
-  const userDetails = Buffer.from(cloudEvent.data.message.data, "base64");
+  const userDetails = JSON.parse(
+    Buffer.from(cloudEvent.data.message.data, "base64").toString()
+  );
 
   const email = userDetails["username"];
   const verificationLink =
