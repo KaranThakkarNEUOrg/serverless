@@ -17,9 +17,7 @@ functions.cloudEvent("verify_email", async (cloudEvent) => {
   );
 
   const email = userDetails["username"];
-  const verificationLink =
-    userDetails["verificationLink"] ||
-    "https://www.youtube.com/watch?v=O1RpPG7Kb1s&list=RDMMow77NqggH-0&index=3";
+  const verificationLink = userDetails["verificationToken"];
   const firstName = userDetails["first_name"];
 
   mg.messages
@@ -29,7 +27,7 @@ functions.cloudEvent("verify_email", async (cloudEvent) => {
       subject: "Please verify your email address",
       text: `Dear ${firstName},
 
-      Thank you for registering at our website. Please click on the following link to verify your email address: 
+      Thank you for registering at our website. Please click on the following link to verify your email address: ${process.env.WEBAPP_URL}?token=${verificationLink}
       
       If you did not request this, please ignore this email.
       
@@ -37,7 +35,7 @@ functions.cloudEvent("verify_email", async (cloudEvent) => {
       Karan Thakkar`,
       html: `<p>Dear ${firstName},</p>
 
-      <p>Thank you for registering at our website. Please click on the following link to verify your email address: <a href="${verificationLink}">${verificationLink}</a></p>
+      <p>Thank you for registering at our website. Please click on the following link to verify your email address: <a href="${process.env.WEBAPP_URL}?token=${verificationLink}">${process.env.WEBAPP_URL}?token=${verificationLink}</a></p>
       
       <p>If you did not request this, please ignore this email.</p>
       
