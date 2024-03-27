@@ -1,46 +1,77 @@
 const functions = require("@google-cloud/functions-framework");
+const mysql = require("mysql");
 const formData = require("form-data");
 const Mailgun = require("mailgun.js");
 const mailgun = new Mailgun(formData);
+
 const mg = mailgun.client({
-  username: "karan009",
+  username: process.env.mailgun_username,
   key: process.env.MAILGUN_API_KEY,
 });
 
-// Register a CloudEvent callback with the Functions Framework that will
-// be executed when the Pub/Sub trigger topic receives a message.
-functions.cloudEvent("verify_email", async (cloudEvent) => {
-  // The Pub/Sub message is passed as the CloudEvent's data payload.
-  // The Pub/Sub message is passed as the CloudEvent's data payload.
+const pool = mysql.createPool({
+  host: process.env.sql_hostname,
+  user: process.env.sql_username,
+  password: process.env.sql_password,
+  database: process.env.sql_databasename,
+});
+
+functions.cloudEvent(process.env.pubsub_topic_name, async (cloudEvent) => {
   const userDetails = JSON.parse(
     Buffer.from(cloudEvent.data.message.data, "base64").toString()
   );
-
   const email = userDetails["username"];
-  const verificationLink = userDetails["verificationToken"];
   const firstName = userDetails["first_name"];
+  const id = userDetails["id"];
 
-  mg.messages
-    .create("karanthakkar.me", {
+  const updatedMetadata = {
+    id: userDetails["id"],
+    timestamp: new Date().toISOString().slice(0, 19).replace("T", " "),
+  };
+
+  try {
+    const queryPromise = new Promise((reslove, reject) => {
+      pool.query(
+        "INSERT INTO user_metadata SET ?",
+        updatedMetadata,
+        (error, results, fields) => {
+          if (error) {
+            console.error(error);
+            reject(error);
+          }
+          console.log("Inserted " + results.affectedRows + " row(s).");
+          reslove();
+        }
+      );
+    });
+    await queryPromise;
+
+    const message = await mg.messages.create("karanthakkar.me", {
       from: "noreply@karanthakkar.me",
       to: [email],
-      subject: "Please verify your email address",
-      text: `Dear ${firstName},
+      subject: "Welcome to our website! Please confirm your email",
+      text: `Hello ${firstName},
 
-      Thank you for registering at our website. Please click on the following link to verify your email address: ${process.env.WEBAPP_URL}?token=${verificationLink}
+      Welcome to our website! We're excited to have you here.
+
+      Thank you for registering at our website. Please click on the following link to verify your email address: ${process.env.WEBAPP_URL}?id=${id}
       
       If you did not request this, please ignore this email.
       
       Best Regards,
       Karan Thakkar`,
-      html: `<p>Dear ${firstName},</p>
+      html: `<p>Hello ${firstName},</p>
 
-      <p>Thank you for registering at our website. Please click on the following link to verify your email address: <a href="${process.env.WEBAPP_URL}?token=${verificationLink}">${process.env.WEBAPP_URL}?token=${verificationLink}</a></p>
+      <p>Welcome to our website! We're excited to have you here.</p>
+
+      <p>Thank you for registering at our website. Please click on the following link to verify your email address: <a href="${process.env.WEBAPP_URL}?id=${id}">${process.env.WEBAPP_URL}?id=${id}</a></p>
       
       <p>If you did not request this, please ignore this email.</p>
       
       <p>Best Regards,<br>Karan Thakkar</p>`,
-    })
-    .then((msg) => console.log(msg)) // logs response data
-    .catch((err) => console.log(err));
+    });
+    console.log(message);
+  } catch (error) {
+    console.error(error);
+  }
 });
