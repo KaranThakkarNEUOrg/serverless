@@ -47,7 +47,7 @@ functions.cloudEvent(process.env.pubsub_topic_name, async (cloudEvent) => {
     await queryPromise;
 
     const message = await mg.messages.create(process.env.webapp_domain_name, {
-      from: "noreply@karanthakkar.me",
+      from: process.env.message_from,
       to: [email],
       subject: "Welcome to our website! Please confirm your email",
       text: `Hello ${firstName},
