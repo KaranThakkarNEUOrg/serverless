@@ -32,7 +32,7 @@ functions.cloudEvent(process.env.pubsub_topic_name, async (cloudEvent) => {
   try {
     const queryPromise = new Promise((reslove, reject) => {
       pool.query(
-        "INSERT INTO user_metadata SET ?",
+        `INSERT INTO ${process.env.metadata_table_name} SET ?`,
         updatedMetadata,
         (error, results, fields) => {
           if (error) {
@@ -46,7 +46,7 @@ functions.cloudEvent(process.env.pubsub_topic_name, async (cloudEvent) => {
     });
     await queryPromise;
 
-    const message = await mg.messages.create("karanthakkar.me", {
+    const message = await mg.messages.create(process.env.webapp_domain_name, {
       from: "noreply@karanthakkar.me",
       to: [email],
       subject: "Welcome to our website! Please confirm your email",
