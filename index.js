@@ -5,18 +5,18 @@ const Mailgun = require("mailgun.js");
 const mailgun = new Mailgun(formData);
 
 const mg = mailgun.client({
-  username: process.env.mailgun_username,
+  username: process.env.MAILGUN_USERNAME,
   key: process.env.MAILGUN_API_KEY,
 });
 
 const pool = mysql.createPool({
-  host: process.env.sql_hostname,
-  user: process.env.sql_username,
-  password: process.env.sql_password,
-  database: process.env.sql_databasename,
+  host: process.env.SQL_HOSTNAME,
+  user: process.env.SQL_USERNAME,
+  password: process.env.SQL_PASSWORD,
+  database: process.env.SQL_DATABASENAME,
 });
 
-functions.cloudEvent(process.env.pubsub_topic_name, async (cloudEvent) => {
+functions.cloudEvent(process.env.PUBSUB_TOPIC_NAME, async (cloudEvent) => {
   const userDetails = JSON.parse(
     Buffer.from(cloudEvent.data.message.data, "base64").toString()
   );
@@ -32,7 +32,7 @@ functions.cloudEvent(process.env.pubsub_topic_name, async (cloudEvent) => {
   try {
     const queryPromise = new Promise((reslove, reject) => {
       pool.query(
-        `INSERT INTO ${process.env.metadata_table_name} SET ?`,
+        `INSERT INTO ${process.env.METADATA_TABLE_NAME} SET ?`,
         updatedMetadata,
         (error, results, fields) => {
           if (error) {
@@ -46,8 +46,8 @@ functions.cloudEvent(process.env.pubsub_topic_name, async (cloudEvent) => {
     });
     await queryPromise;
 
-    const message = await mg.messages.create(process.env.webapp_domain_name, {
-      from: process.env.message_from,
+    const message = await mg.messages.create(process.env.WEBAPP_DOMAIN_NAME, {
+      from: process.env.MESSAGE_FROM,
       to: [email],
       subject: "Welcome to our website! Please confirm your email",
       text: `Hello ${firstName},
